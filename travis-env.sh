@@ -17,3 +17,5 @@ for path in $pdl $DRMAA_LIBRARY_PATH; do
         ls -ld "$p"
     done
 done
+
+/usr/bin/sudo -E -n -u u1 $pdl
