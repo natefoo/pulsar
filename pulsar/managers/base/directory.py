@@ -19,6 +19,14 @@ JOB_FILE_TOOL_ID = "tool_id"
 JOB_FILE_TOOL_VERSION = "tool_version"
 JOB_FILE_CANCELLED = "cancelled"
 JOB_FILE_COMMAND_LINE = "command_line"
+JOB_WRAPPER_TEMPLATE = """#!/bin/sh
+PARROT_CVMFS_REPO="data.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/data.galaxyproject.org/,pubkey=$HOME/data.pub \
+                   main.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/main.galaxyproject.org/,pubkey=$HOME/main.pub \
+                   test.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/test.galaxyproject.org/,pubkey=$HOME/test.pub"
+PARROT_ALLOW_SWITCHING_CVMFS_REPOSITORIES=yes
+PARROT_CVMFS_ALIEN_CACHE="$SCRATCH/cvmfs"
+$HOME/cctools/bin/parrot_run {}
+"""
 
 
 class DirectoryBaseManager(BaseManager):
@@ -148,4 +156,7 @@ class DirectoryBaseManager(BaseManager):
         self._write_job_file(job_id, "command.sh", contents)
         script_path = self._job_file(job_id, "command.sh")
         os.chmod(script_path, stat.S_IEXEC | stat.S_IWRITE | stat.S_IREAD)
-        return script_path
+        self._write_job_file(job_id, "command_wrapper.sh", JOB_WRAPPER_TEMPLATE.format(script_path))
+        wrapper_path = self._job_file(job_id, "command_wrapper.sh")
+        os.chmod(wrapper_path, stat.S_IEXEC | stat.S_IWRITE | stat.S_IREAD)
+        return wrapper_path
