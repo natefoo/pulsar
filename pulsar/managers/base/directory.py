@@ -20,9 +20,9 @@ JOB_FILE_TOOL_VERSION = "tool_version"
 JOB_FILE_CANCELLED = "cancelled"
 JOB_FILE_COMMAND_LINE = "command_line"
 JOB_WRAPPER_TEMPLATE = """#!/bin/sh
-PARROT_CVMFS_REPO="data.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/data.galaxyproject.org/,pubkey=$HOME/data.pub \
-                   main.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/main.galaxyproject.org/,pubkey=$HOME/main.pub \
-                   test.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/test.galaxyproject.org/,pubkey=$HOME/test.pub"
+PARROT_CVMFS_REPO="data.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/@fqrn@/;http://cvmfs1-iu0.galaxyproject.org/cvmfs/@fqrn@/;http://cvmfs1-psu0.galaxyproject.org/cvmfs/@fqrn@/,pubkey=$HOME/data.pub \
+                   main.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/@fqrn@/;http://cvmfs1-iu0.galaxyproject.org/cvmfs/@fqrn@/;http://cvmfs1-psu0.galaxyproject.org/cvmfs/@fqrn@/,pubkey=$HOME/main.pub \
+                   test.galaxyproject.org:url=http://cvmfs1-tacc0.galaxyproject.org/cvmfs/@fqrn@/;http://cvmfs1-iu0.galaxyproject.org/cvmfs/@fqrn@/;http://cvmfs1-psu0.galaxyproject.org/cvmfs/@fqrn@/,pubkey=$HOME/test.pub"
 PARROT_ALLOW_SWITCHING_CVMFS_REPOSITORIES=yes
 PARROT_CVMFS_ALIEN_CACHE="$SCRATCH/cvmfs"
 $HOME/cctools/bin/parrot_run {}
