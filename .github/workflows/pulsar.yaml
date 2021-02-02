@@ -6,9 +6,8 @@ jobs:
     run-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-        - tox-env: py37-lint-dist
-        - tox-env: lint-docs
+        tox-env: [py37-lint-dist, lint-docs]
+    steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
     - name: Install tox
