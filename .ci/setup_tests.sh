@@ -18,6 +18,6 @@ yes | sudo /usr/sbin/create-munge-key
 sudo service munge start
 sudo python scripts/configure_test_slurm.py
 echo "export DRMAA_LIBRARY_PATH=/usr/lib/slurm-drmaa/lib/libdrmaa.so" >> local_env.sh
-echo ". $VIRTUAL_ENV/bin/activate" >> local_env.sh
-sudo useradd --home-dir /home/u1 --shell /bin/bash --create-home --comment TEST,,, u1 #--groups travis u1  ## Create user for run-as-user test.
+#echo ". $VIRTUAL_ENV/bin/activate" >> local_env.sh
+sudo useradd --home-dir /home/u1 --shell /bin/bash --create-home --comment TEST,,, --groups $(id -gn) u1  ## Create user for run-as-user test.
 mkdir -p ~/.ssh && cp test_data/testkey.pub ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
