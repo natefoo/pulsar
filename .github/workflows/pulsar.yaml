@@ -37,5 +37,5 @@ jobs:
       run: .ci/setup_tests.sh
     - name: Run tests
       run: export PULSAR_TEST_KEY=test_data/testkey; export TEST_WEBAPP_POST_SHUTDOWN_SLEEP=1; . local_env.sh; tox -e ${{ matrix.tox-env }}
-    - name: Run coveralls
-      run: coveralls
+    #- name: Run coveralls
+    #  run: coveralls
