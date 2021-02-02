@@ -1,7 +1,8 @@
-import os
-import time
+# import os
+# import time
 
-from .test_utils import BaseManagerTestCase, timed
+# from .test_utils import BaseManagerTestCase, timed
+from .test_utils import BaseManagerTestCase
 
 from pulsar.managers.queued import QueueManager
 
@@ -31,8 +32,8 @@ class PythonQueuedManagerTest(BaseManagerTestCase):
     def test_cancel_simple(self):
         self._test_cancelling(self.manager)
 
-    #@timed(10)
-    #def test_cancel_deeper(self):
+    # @timed(10)
+    # def test_cancel_deeper(self):
     #    manager = self.manager
     #    # Test goes deeper than needed when deferring to
     #    # external managers. Ensure the PID dies when killed
