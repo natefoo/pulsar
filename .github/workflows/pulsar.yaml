@@ -26,6 +26,20 @@ jobs:
           python: 3.6
         - tox-env: py36-unit
           python: 3.6
+        - tox-env: py37
+          python: 3.7
+        - tox-env: py37-unit
+          python: 3.7
+        - tox-env: py38
+          python: 3.8
+        - tox-env: py38-unit
+          python: 3.8
+        - tox-env: py39
+          python: 3.9
+        - tox-env: py39-unit
+          python: 3.9
+        - tox-env: py37-install-wheel
+          python: 3.7
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
