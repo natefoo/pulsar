@@ -56,6 +56,7 @@ class ClientManager(ClientManagerInterface):
     def __init__(self, **kwds: Dict[str, Any]):
         """Build a HTTP client or a local client that talks directly to a job manger."""
         if 'pulsar_app' in kwds or 'job_manager' in kwds:
+            log.info("Building local Pulsar client")
             self.job_manager_interface_class = LocalPulsarInterface
             pulsar_app = kwds.get('pulsar_app', None)
             job_manager = kwds.get('job_manager', None)
@@ -67,6 +68,7 @@ class ClientManager(ClientManagerInterface):
             )
         else:
             self.job_manager_interface_class = HttpPulsarInterface
+            log.info(f"Building HTTP Pulsar client, transport type is {transport_type}")
             transport_type = kwds.get('transport', None)
             transport_params = {p.replace('transport_', '', 1): v for p, v in kwds.items() if p.startswith('transport_')}
             transport = get_transport(transport_type, transport_params=transport_params)

@@ -176,6 +176,8 @@ class FileActionMapper:
         self.ssh_port = config.get("ssh_port", None)
         self.mappers = mappers_from_dicts(config.get("paths", []))
         self.files_endpoint = config.get("files_endpoint", None)
+        self.files_endpoint_up = config.get("files_endpoint_up", self.files_endpoint)
+        self.files_endpoint_down = config.get("files_endpoint_down", self.files_endpoint)
 
     def action(self, source, type, mapper=None):
         path = source.get("path", None)
@@ -200,6 +202,8 @@ class FileActionMapper:
         return dict(
             default_action=self.default_action,
             files_endpoint=self.files_endpoint,
+            files_endpoint_up=self.files_endpoint_up,
+            files_endpoint_down=self.files_endpoint_down,
             ssh_key=self.ssh_key,
             ssh_user=self.ssh_user,
             ssh_port=self.ssh_port,
@@ -215,6 +219,8 @@ class FileActionMapper:
             config = getattr(client, "file_actions", {})
         config["default_action"] = client.default_file_action
         config["files_endpoint"] = client.files_endpoint
+        config["files_endpoint_up"] = client.files_endpoint_up
+        config["files_endpoint_down"] = client.files_endpoint_down
         for attr in ['ssh_key', 'ssh_user', 'ssh_port', 'ssh_host']:
             if hasattr(client, attr):
                 config[attr] = getattr(client, attr)
@@ -257,14 +263,18 @@ class FileActionMapper:
             self.__inject_ssh_properties(action)
 
     def __inject_url(self, action, file_type):
-        url_base = self.files_endpoint
-        if not url_base:
-            raise Exception(MISSING_FILES_ENDPOINT_ERROR)
-        if "?" not in url_base:
-            url_base = "%s?" % url_base
-        # TODO: URL encode path.
-        url = "{}&path={}&file_type={}".format(url_base, action.path, file_type)
-        action.url = url
+        #log.debug(f"######## __inject_url(action={action}, file_type={file_type}), current url = {action.url}\n{''.join(traceback.format_stack())}")
+        for attr, url_base in (('url', self.files_endpoint), ('url_up', self.files_endpoint_up), ('url_down', self.files_endpoint_down)):
+            #url_base = self.files_endpoint
+            if not url_base:
+                raise Exception(MISSING_FILES_ENDPOINT_ERROR)
+            if "?" not in url_base:
+                url_base = "%s?" % url_base
+            # TODO: URL encode path.
+            url = "{}&path={}&file_type={}".format(url_base, action.path, file_type)
+            #action.url = url
+            log.debug(f"######## __inject_url(action={action}, file_type={file_type}), url = {url}")
+            setattr(action, attr, url)
 
     def __inject_ssh_properties(self, action):
         for attr in ["ssh_key", "ssh_host", "ssh_port", "ssh_user"]:
@@ -442,6 +452,9 @@ class RemoteCopyAction(BaseAction):
             copy_to_path(f, destination)
 
 
+import logging
+log = logging.getLogger(__name__)
+import traceback
 class RemoteTransferAction(BaseAction):
     """ This action indicates the Pulsar server should transfer the file before
     execution via one of the remote transfer implementations. This is like a TransferAction, but
@@ -455,6 +468,8 @@ class RemoteTransferAction(BaseAction):
     def __init__(self, source, file_lister=None, url=None):
         super().__init__(source, file_lister=file_lister)
         self.url = url
+        self.url_up = None
+        self.url_down = None
 
     def to_dict(self):
         return self._extend_base_dict(url=self.url)
@@ -464,10 +479,14 @@ class RemoteTransferAction(BaseAction):
         return RemoteTransferAction(source=action_dict["source"], url=action_dict["url"])
 
     def write_to_path(self, path):
-        get_file(self.url, path)
+        #log.debug(f"######## write_to_path(path={path}), url = {self.url}\n{''.join(traceback.format_stack())}")
+        log.debug(f"######## write_to_path(path={path}), url = {self.url}, url_up = {self.url_up}")
+        get_file(self.url_up or self.url, path)
 
     def write_from_path(self, pulsar_path):
-        post_file(self.url, pulsar_path)
+        #log.debug(f"######## write_from_path(pulsar_path={pulsar_path}), url = {self.url}\n{''.join(traceback.format_stack())}")
+        log.debug(f"######## write_from_path(pulsar_path={pulsar_path}), url = {self.url}, url_down = {self.url_down}")
+        post_file(self.url_down or self.url, pulsar_path)
 
 
 class RemoteObjectStoreCopyAction(BaseAction):

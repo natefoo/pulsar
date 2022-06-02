@@ -62,6 +62,8 @@ class BaseJobClient:
             setattr(self, attr, destination_params.get(attr, None))
         self.env = destination_params.get("env", [])
         self.files_endpoint = destination_params.get("files_endpoint", None)
+        self.files_endpoint_up = destination_params.get("files_endpoint_up", self.files_endpoint)
+        self.files_endpoint_down = destination_params.get("files_endpoint_down", self.files_endpoint)
 
         default_file_action = self.destination_params.get("default_file_action", "transfer")
         if default_file_action not in actions:

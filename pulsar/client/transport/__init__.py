@@ -6,6 +6,7 @@ from .requests import requests_multipart_post_available
 from .ssh import rsync_get_file, scp_get_file
 from .ssh import rsync_post_file, scp_post_file
 from .standard import UrllibTransport
+from .tus import tus_available
 
 if curl_available:
     from .curl import get_file
@@ -16,6 +17,10 @@ elif requests_multipart_post_available:
 else:
     from .poster import get_file
     from .poster import post_file
+
+# FIXME: only if using tus eh
+if tus_available:
+    from .tus import post_file
 
 
 def get_transport(transport_type=None, os_module=os, transport_params=None):
