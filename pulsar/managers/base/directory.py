@@ -210,6 +210,7 @@ class DirectoryBaseManager(BaseManager):
         return job_template_env
 
     def _write_job_script(self, job_id, contents):
+        contents = contents.replace("/cvmfs/singularity.galaxyproject.org/", "$CVMFSEXEC_DIR/.cvmfsexec/dist/cvmfs/singularity.galaxyproject.org/")
         self._write_job_file(job_id, "command.sh", contents)
         script_path = self._job_file(job_id, "command.sh")
         os.chmod(script_path, stat.S_IEXEC | stat.S_IWRITE | stat.S_IREAD)
