@@ -1,5 +1,7 @@
+import concurrent.futures
 import contextlib
 import datetime
+import multiprocessing
 import os
 import threading
 import time
@@ -58,6 +60,7 @@ class StatefulManagerProxy(ManagerProxy):
         self.active_jobs = ActiveJobs.from_manager(manager)
         self.__state_change_callback = self._default_status_change_callback
         self.__monitor = None
+        self.__executor = concurrent.futures.ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("forkserver"))
 
     def set_state_change_callback(self, state_change_callback):
         self.__state_change_callback = state_change_callback
@@ -102,7 +105,7 @@ class StatefulManagerProxy(ManagerProxy):
     def _launch_prepreprocessing_thread(self, job_id, launch_config):
         def do_preprocess():
             with self._handling_of_preprocessing_state(job_id, launch_config):
-                job_directory = self._proxied_manager.job_directory(job_id)
+                job_directory = self._proxied_manager.job_directory(job_id, lockable=False)
                 staging_config = launch_config.get("remote_staging", {})
                 # TODO: swap out for a generic "job_extra_params"
                 if 'action_mapper' in staging_config and \
@@ -111,7 +114,8 @@ class StatefulManagerProxy(ManagerProxy):
                     for action in staging_config['setup']:
                         action['action'].update(ssh_key=staging_config['action_mapper']['ssh_key'])
                 setup_config = staging_config.get("setup", [])
-                preprocess(job_directory, setup_config, self.__preprocess_action_executor, object_store=self.object_store)
+                future = self.__executor.submit(preprocess, job_directory, setup_config, self.__preprocess_action_executor, object_store=self.object_store)
+                future.result()
                 self.active_jobs.deactivate_job(job_id, active_status=ACTIVE_STATUS_PREPROCESSING)
 
         new_thread_for_job(self, "preprocess", job_id, do_preprocess, daemon=False)
@@ -218,9 +222,10 @@ class StatefulManagerProxy(ManagerProxy):
     def __handle_postprocessing(self, job_id):
         def do_postprocess():
             postprocess_success = False
-            job_directory = self._proxied_manager.job_directory(job_id)
+            job_directory = self._proxied_manager.job_directory(job_id, lockable=False)
             try:
-                postprocess_success = postprocess(job_directory, self.__postprocess_action_executor)
+                future = self.__executor.submit(postprocess, job_directory, self.__postprocess_action_executor)
+                postprocess_success = future.result()
             except Exception:
                 log.exception("Failed to postprocess results for job id %s" % job_id)
             final_status = status.COMPLETE if postprocess_success else status.FAILED
@@ -235,6 +240,7 @@ class StatefulManagerProxy(ManagerProxy):
                 self.__monitor.shutdown(timeout)
             except Exception:
                 log.exception("Failed to shutdown job monitor for manager %s" % self.name)
+        self.__executor.shutdown()
         super().shutdown(timeout)
 
     def recover_active_jobs(self):

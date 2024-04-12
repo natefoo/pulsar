@@ -151,11 +151,11 @@ class BaseManager(ManagerInterface):
         assert isdir(staging_directory)
         self.staging_directory = staging_directory
 
-    def _job_directory(self, job_id):
+    def _job_directory(self, job_id, lockable=True):
         return JobDirectory(
             self.staging_directory,
             job_id,
-            self.lock_manager,
+            self.lock_manager if lockable else None,
             self._directory_maker,
         )
 

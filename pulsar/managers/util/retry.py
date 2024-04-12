@@ -24,7 +24,7 @@ class RetryActionExecutor:
         self.interval_start = float(kwds.get("interval_start", DEFAULT_INTERVAL_START))
         self.interval_step = float(kwds.get("interval_step", DEFAULT_INTERVAL_STEP))
         self.interval_max = float(kwds.get("interval_max", DEFAULT_INTERVAL_MAX))
-        self.errback = kwds.get("errback", self.__default_errback)
+        self.errback = kwds.get("errback", self._default_errback)
         self.catch = kwds.get("catch", DEFAULT_CATCH)
 
         self.default_description = kwds.get("description", DEFAULT_DESCRIPTION)
@@ -49,7 +49,7 @@ class RetryActionExecutor:
             errback=on_error,
         )
 
-    def __default_errback(self, exc, interval, description=None):
+    def _default_errback(self, exc, interval, description=None):
         description = description or self.default_description
         log.info(
             "Failed to execute %s, retrying in %s seconds.",
